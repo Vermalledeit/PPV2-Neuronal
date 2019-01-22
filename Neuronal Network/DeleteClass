@@ -1,0 +1,67 @@
+-- 17.01.2019 09:13:09 MH V1.0a
+
+block.setSize(130, 29)
+
+generic = {
+  name = 'DeleteClass',
+  parameter = {
+  },
+
+  init = function(self)
+    block.setInputsPinCount(1)
+    block.setOutputsPinCount(1)
+    block.setInputPinTypeRestrains(1, 'table')
+    block.setOutputPinTypeRestrains(1, 'table')
+    block.modifyFlags('SupressStopFunctionCall', true)
+    block.modifyFlags('SupressStartFunctionCall', true)
+  end,
+
+  open = function(self)
+    gui.add('Info', 'Info', self.name, "Deletes the Classes from LVQ for better Visual")
+    gui.setSize()
+  end,
+
+  apply = function(self)
+  end,
+
+  close = function()
+  end,
+
+  avatar = function(self)
+    return block.getDefaultAvatar(0x50, '"Remove LVQ Class"')
+  end,
+
+  generate = function(self)
+    local source =
+      [==[
+        local block = {}
+
+          block.step = function(a)
+              q = {}
+
+              if not a then
+                 q[1] = {0,0}
+                 return q
+              end
+
+              for i = 1, #a do
+                  q[i] = {}
+                  for j = 1, #a[1] do
+                      if j ~= 1 then
+                         q[i][j-1] = a[i][j]
+                      end
+                  end
+               end
+
+               return q
+          end
+
+        return block
+      ]==]
+  local replaces = {
+    }
+    return string.gsub(source, '%a+', replaces)
+  end,
+
+}
+

@@ -1,0 +1,108 @@
+-- 17.01.2019 08:58:30 MH V1.0a
+
+block.setSize(151, 51)
+
+generic = {
+  parameter = {
+    path = [[c:\WeightedVector.csv]],
+    delimiter = ';',
+    delimiterIndex = 0,
+  },
+
+  refreshPins = function(self)
+    local items = {}
+    block.setInputsPinCount(#items + 1)
+    block.setInputPinName(1, 'Data')
+    block.setInputPinTypeRestrains(1, 'table')
+    for i = 1, #items do
+      block.setInputPinName(i + 1, items[i])
+      block.setInputPinTypeRestrains(i + 1, 'boolean', 'number', 'string')
+    end
+  end,
+
+  init = function(self)
+    block.needPPVersion(2, 0, 'l')
+    block.modifyFlags('SupressStartFunctionCall', true)
+    generic.refreshPins(self)
+  end,
+
+  open = function(self)
+    gui.add('Info', 'Info', 'Save text file', 'Saves the Weighted Vectors of the LVQ Algorithmus')
+    local str = {';',',','.',':','-','_','/'}
+    local s = ''
+    for i=1, #str do
+       s = s .. str[i] .. '\n'
+    end
+    local delimiterIndex = 0
+
+    gui.add('Edit', 'EditPath', 'File path', {Width = 400})
+    gui.set('EditPath', 'Text', self.parameter.path)
+    gui.add('ComboBox', 'ComboBoxDelimiter', 'Delimiter', s, {Width = 60})
+    gui.setEventHandler(
+      self,
+      'ComboBoxDelimiter',
+      {
+         Click = function(self)
+           self.parameter.delimiter = gui.get('ComboBoxDelimiter', 'Text')
+           self.parameter.delimiterIndex = gui.get('ComboBoxDelimiter')
+         end
+      }
+    )
+    gui.set('ComboBoxDelimiter', self.parameter.delimiterIndex)
+    gui.setSize()
+  end,
+
+  apply = function(self)
+    self.parameter.path = gui.get('EditPath', 'Text')
+  end,
+
+  close = function()
+  end,
+
+  avatar = function(self)
+    return block.getDefaultAvatar(0x00, "'Save\\ntext\\nfile'")
+  end,
+
+  generate = function(self, remote)
+    local source =
+      [==[
+        local block = {}
+
+        block.stop = function()
+
+           local s = ''
+           for _,x in ipairs(block.temp) do
+               for _,y in ipairs(x) do
+                   s = s .. tostring(y) .. 'DELIMITER'
+               end
+               s = s:sub(1,-2)
+               s = s .. "\n"
+           end
+           s = s:sub(1,-2)
+
+           local path = [[PATH]]
+
+           local f = assert(io.open(path, 'w'))
+           f:write(s)
+           f:close()
+           --print(s)
+        end
+
+        block.step = function(a)
+           block.temp = a
+        end
+
+        return block
+      ]==]
+    local replaces = {
+      ['PATH'] = self.parameter.path,
+      ['DELIMITER'] = self.parameter.delimiter,
+    }
+    return string.gsub(source, '%a+', replaces)
+  end,
+
+}
+
+local block = {}
+
+
